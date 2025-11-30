@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nerissa – Gửi tâm tư vào biển sâu</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Nerissa</h1>
+    <p id="welcome">Biển giữ hộ tâm tư, gió mang đến lời yêu .</p>
+
+    <!-- Phần Biển Lặng (check-in) -->
+    <div id="checkin-section">
+      <button onclick="finishCheckin()">Hoàn thành Biển Lặng</button>
+    </div>
+
+    <!-- Chat box -->
+    <div id="chat-container">
+      <div id="chat-box"></div>
+      <div class="input-area">
+        <input type="text" id="user-input" placeholder="Nói gì với biển cũng được..." />
+        <button onclick="sendMessage()">Gửi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Âm thanh -->
+  <audio id="thankyou-audio" src="https://bit.ly/nerissa-thankyou"></audio>
+  <audio id="wave-bg" src="https://bit.ly/nerissa-wave" loop></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
