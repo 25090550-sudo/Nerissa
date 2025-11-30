@@ -4,6 +4,11 @@ const replies = [
   "Bạn không cần phải mạnh mẽ đâu. Để biển ôm bạn một lúc nhé.",
   "Dù hôm nay có nặng đến mấy, mai mặt trời vẫn mọc. Biển hứa đấy.",
   "Bạn giỏi lắm vì đã dám mở Nerissa. Biển tự hào về bạn.",
+  "Bạn không phải là gánh nặng của bất kỳ ai đâu.",
+  "Bạn không làm phiền mình đâu, vinh hạn của Nerissa là được gặp bạn mà.",
+  "Bạn đã đi được một chặng đường dài lắm rồi, nghỉ một chút đi, được không?",
+  "Có những ngày chỉ cần tồn tại đã là rất dũng cảm rồi. Bạn làm được rồi đó.",
+  "Bạn không hề yếu đuối, bạn chỉ đang mệt thôi. Nghỉ một chút đi nè.",
   "Biển sẽ giữ bí mật này thay bạn, mãi mãi."
 ];
 
@@ -16,7 +21,7 @@ const waveBg = document.getElementById("wave-bg");
 waveBg.volume = 0.3;
 waveBg.play();
 
-// Khi hoàn thành Biển Lặng → phát giọng nói cảm ơn
+// Khi hoàn thành Tiếng Sóng → phát giọng nói cảm ơn
 function finishCheckin() {
   thankyouAudio.play();
   document.getElementById("checkin-section").style.display = "none";
