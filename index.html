@@ -9,15 +9,10 @@
 <body>
   <div class="container">
     <h1>Nerissa</h1>
-    <p id="welcome">Biển giữ hộ bí mật của bạn, gió mang hộ lời yêu thương.</p>
+    <p>Biển giữ hộ tâm tư, gió mang đến lời yêu.</p>
+    <div id="status">Đang tìm một người bạn đồng hành cùng biển...</div>
 
-    <!-- Phần Tiếng Sóng (check-in) -->
-    <div id="checkin-section">
-      <button onclick="finishCheckin()">Tiếng Sóng</button>
-    </div>
-
-    <!-- Chat box -->
-    <div id="chat-container">
+    <div id="chat-container" style="display:none">
       <div id="chat-box"></div>
       <div class="input-area">
         <input type="text" id="user-input" placeholder="Nói gì với biển cũng được..." />
@@ -26,10 +21,6 @@
     </div>
   </div>
 
-  <!-- Âm thanh -->
-  <audio id="thankyou-audio" src="https://bit.ly/nerissa-thankyou"></audio>
-  <audio id="wave-bg" src="https://bit.ly/nerissa-wave" loop></audio>
-
-  <script src="script.js"></script>
-</body>
-</html>
+  <!-- Âm thanh -->https://bit.ly/nerissa-welcome-voice
+  <audio id="welcome-voice" src="https://bit.ly/nerissa-welcome-voice"></audio> <!-- giọng nữ Bắc -->
+  <audio id="wave-bg" src="https://bit
