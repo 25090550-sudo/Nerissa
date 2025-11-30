@@ -1,13 +1,62 @@
-body {
-  margin: 0; font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-  color: #e0f7fa; height: 100vh; display: flex; justify-content: center; align-items: center;
+const replies = [
+  "Biển nghe thấy bạn rồi… cứ khóc đi, sóng sẽ lau nước mắt hộ bạn.",
+  "Hít một hơi thật sâu cùng mình nào… thở ra từ từ… tốt lắm.",
+  "Bạn không cần phải mạnh mẽ đâu. Để biển ôm bạn một lúc nhé.",
+  "Dù hôm nay có nặng đến mấy, mai mặt trời vẫn mọc. Biển hứa đấy.",
+  "Bạn giỏi lắm vì đã dám mở Nerissa. Biển tự hào về bạn.",
+  "Bạn giỏi lắm vì đã dám mở Nerissa. Biển tự hào về bạn.",
+  "Bạn không phải là gánh nặng của bất kỳ ai đâu.",
+  "Bạn không làm phiền mình đâu, vinh hạn của Nerissa là được gặp bạn mà.",
+  "Bạn đã đi được một chặng đường dài lắm rồi, nghỉ một chút đi, được không?",
+  "Có những ngày chỉ cần tồn tại đã là rất dũng cảm rồi. Bạn làm được rồi đó.",
+  "Bạn không hề yếu đuối, bạn chỉ đang mệt thôi. Nghỉ một chút đi nè.",
+  "Biển sẽ giữ bí mật này thay bạn, mãi mãi."
+];
+
+const chatBox = document.getElementById("chat-box");
+const userInput = document.getElementById("user-input");
+const thankyouAudio = document.getElementById("thankyou-audio");
+const waveBg = document.getElementById("wave-bg");
+
+// Phát tiếng sóng nền nhẹ
+waveBg.volume = 0.3;
+waveBg.play();
+
+// Khi hoàn thành Tiếng Sóng → phát giọng nói cảm ơn
+function finishCheckin() {
+  thankyouAudio.play();
+  document.getElementById("checkin-section").style.display = "none";
+  document.getElementById("chat-container").style.display = "block";
+  addMessage("bot", "Biển đây… bạn muốn nói gì cũng được, mình đang lắng nghe ♡");
 }
-.container { text-align: center; max-width: 400px; padding: 20px; }
-h1 { font-size: 3em; margin: 0; color: #80deea; }
-#welcome { font-size: 1.1em; margin: 20px 0; }
-button { padding: 12px 24px; background: #26a69a; border: none; border-radius: 30px; color: white; cursor: pointer; margin: 10px; }
-#chat-container { margin-top: 30px; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 15px; display: none; }
-#chat-box { height: 300px; overflow-y: auto; margin-bottom: 10px; text-align: left; }
-.input-area { display: flex; }
-#user-input { flex: 1; padding: 12px; border: none; border-radius: 30px; }
+
+// Gửi tin nhắn
+function sendMessage() {
+  const msg = userInput.value.trim();
+  if (!msg) return;
+  addMessage("user", msg);
+  userInput.value = "";
+
+  // Bot trả lời sau 1 giây
+  setTimeout(() => {
+    const reply = replies[Math.floor(Math.random() * replies.length)];
+    addMessage("bot", reply);
+  }, 1000 + Math.random() * 1000);
+}
+
+function addMessage(sender, text) {
+  const div = document.createElement("div");
+  div.className = sender;
+  div.textContent = text;
+  div.style.margin = "10px 0";
+  div.style.padding = "10px 15px";
+  div.style.borderRadius = "15px";
+  div.style.maxWidth = "80%";
+  div.style.marginLeft = sender === "user" ? "auto" : "0";
+  div.style.background = sender === "user" ? "#26a69a" : "rgba(255,255,255,0.2)";
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Enter để gửi
+userInput.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
