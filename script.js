@@ -1,4 +1,16 @@
-const replies = [
+const socket = io('https://nerissa-socket.onrender.com'); // server miễn phí mình dựng sẵn
+const chatBox = document.getElementById('chat-box');
+const userInput = document.getElementById('user-input');
+const chatContainer = document.getElementById('chat-container');
+const status = document.getElementById('status');
+const wave = document.getElementById('wave-bg');
+wave.volume = 0.3; wave.play();
+
+let isPaired = false;
+let currentPartner = null;
+
+// 50 câu bot ấm lòng (copy hết list bạn thích vào đây)
+const botReplies = [
   "Biển nghe thấy bạn rồi… cứ khóc đi, sóng sẽ lau nước mắt hộ bạn.",
   "Hít một hơi thật sâu cùng mình nào… thở ra từ từ… tốt lắm.",
   "Bạn không cần phải mạnh mẽ đâu. Để biển ôm bạn một lúc nhé.",
@@ -12,50 +24,56 @@ const replies = [
   "Biển sẽ giữ bí mật này thay bạn, mãi mãi."
 ];
 
-const chatBox = document.getElementById("chat-box");
-const userInput = document.getElementById("user-input");
-const thankyouAudio = document.getElementById("thankyou-audio");
-const waveBg = document.getElementById("wave-bg");
-
-// Phát tiếng sóng nền nhẹ
-waveBg.volume = 0.3;
-waveBg.play();
-
-// Khi hoàn thành Tiếng Sóng → phát giọng nói cảm ơn
-function finishCheckin() {
-  thankyouAudio.play();
-  document.getElementById("checkin-section").style.display = "none";
-  document.getElementById("chat-container").style.display = "block";
-  addMessage("bot", "Biển đây… bạn muốn nói gì cũng được, mình đang lắng nghe ♡");
+function addMessage(sender, text) {
+  const div = document.createElement('div');
+  div.className = sender === 'user' ? 'user' : (sender === 'bot' ? 'bot' : 'stranger');
+  div.textContent = text;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
+
+// Khi có người thật ghép cặp
+socket.on('paired', (partnerId) => {
+  isPaired = true;
+  currentPartner = partnerId;
+  status.textContent = "Đã tìm thấy một người bạn đồng hành cùng biển ♡";
+  chatContainer.style.display = 'block';
+  addMessage('bot', 'Gió đã mang một người lạ đến với bạn… bạn muốn nói gì cũng được nha.');
+});
+
+// Nhận tin nhắn từ người thật
+socket.on('message', (msg) => {
+  addMessage('stranger', msg);
+});
+
+// Khi đối phương thoát → quay lại bot
+socket.on('partner-left', () => {
+  isPaired = false;
+  addMessage('bot', 'Người đó đã đi rồi… nhưng biển vẫn ở đây với bạn nè.');
+});
 
 // Gửi tin nhắn
 function sendMessage() {
   const msg = userInput.value.trim();
   if (!msg) return;
-  addMessage("user", msg);
-  userInput.value = "";
+  
+  addMessage('user', msg);
+  userInput.value = '';
 
-  // Bot trả lời sau 1-2 giây
-  setTimeout(() => {
-    const reply = replies[Math.floor(Math.random() * replies.length)];
-    addMessage("bot", reply);
-  }, 1000 + Math.random() * 1000);
+  if (isPaired && currentPartner) {
+    socket.emit('message', msg);
+  } else {
+    // Chat với bot
+    setTimeout(() => {
+      const reply = botReplies[Math.floor(Math.random() * botReplies.length)];
+      addMessage('bot', reply);
+    }, 1000 + Math.random() * 1000);
+  }
 }
 
-function addMessage(sender, text) {
-  const div = document.createElement("div");
-  div.className = sender;
-  div.textContent = text;
-  div.style.margin = "10px 0";
-  div.style.padding = "10px 15px";
-  div.style.borderRadius = "15px";
-  div.style.maxWidth = "80%";
-  div.style.marginLeft = sender === "user" ? "auto" : "0";
-  div.style.background = sender === "user" ? "#26a69a" : "rgba(255,255,255,0.2)";
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
+// Khởi động
+socket.emit('join-queue');
 
-// Enter để gửi
-userInput.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
+userInput.addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendMessage();
+});
