@@ -9,10 +9,15 @@
 <body>
   <div class="container">
     <h1>Nerissa</h1>
-    <p>Biển giữ hộ tâm tư, gió mang đếnlời yêu.</p>
-    <div id="status">Đang tìm một người bạn đồng hành cùng biển...</div>
+    <p id="welcome">Biển giữ hộ tâm tư, gió mang đến lời yêu.</p>
 
-    <div id="chat-container" style="display:none">
+    <!-- Phần Tiếng Sóng (check-in) -->
+    <div id="checkin-section">
+      <button onclick="finishCheckin()">Hoàn thành Tiếng Sóng</button>
+    </div>
+
+    <!-- Chat box -->
+    <div id="chat-container">
       <div id="chat-box"></div>
       <div class="input-area">
         <input type="text" id="user-input" placeholder="Nói gì với biển cũng được..." />
@@ -22,30 +27,9 @@
   </div>
 
   <!-- Âm thanh -->
-  <audio id="welcome-voice" src="https://bit.ly/nerissa-welcome-voice"></audio> <!-- giọng nữ Bắc -->
-  <audio id="wave-bg" src="https://bit.ly/nerissa-wave" loop></audio>
   <audio id="thankyou-audio" src="https://bit.ly/nerissa-thankyou"></audio>
+  <audio id="wave-bg" src="https://bit.ly/nerissa-wave" loop></audio>
 
-  <script src="https://cdn.jsdelivr.net/npm/socket.io@4.7.2/client-dist/socket.io.min.js"></script>
   <script src="script.js"></script>
-
-  <!-- Fix autoplay trên mobile -->
-  <script>
-    document.body.addEventListener('click', function unlockAudio() {
-      document.getElementById('welcome-voice').play();
-      document.getElementById('wave-bg').volume = 0.3;
-      document.getElementById('wave-bg').play();
-      document.body.removeEventListener('click', unlockAudio);
-    }, { once: true });
-
-    // Tự động phát giọng chào ngay khi load (nếu trình duyệt cho phép)
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        document.getElementById('welcome-voice').play().catch(() => {});
-        document.getElementById('wave-bg').volume = 0.3;
-        document.getElementById('wave-bg').play().catch(() => {});
-      }, 800);
-    });
-  </script>
 </body>
 </html>
