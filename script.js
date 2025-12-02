@@ -1,11 +1,12 @@
 
-const socket = io('https://nerissa-socket.up.railway.app'); // server luôn sống
+const socket = io('https://nerissa-socket.up.railway.app');
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const chatContainer = document.getElementById('chat-container');
 const status = document.getElementById('status');
 const micBtn = document.getElementById('mic-btn');
 const muteBtn = document.getElementById('mute-btn');
+const modeSwitch = document.getElementById('mode-switch');
 
 const welcomeVoice = document.getElementById('welcome-voice');
 const thankyouAudio = document.getElementById('thankyou-voice');
@@ -32,78 +33,25 @@ const replies = [
   "Biển sẽ giữ bí mật này thay bạn, mãi mãi."
 ];
 
-const smartReplies = {
-  anxiety: [
-    "Thử thở 4-7-8 cùng biển nhé: hít vào 4s, giữ 7s, thở ra 8s.",
-    "Bạn đang an toàn. Nỗi lo chỉ là tạm thời thôi.",
-    "Grounding 5-4-3-2-1: nhìn 5 vật, chạm 4 vật, nghe 3 âm thanh…"
-  ],
-  depression: [
-    "Buồn hôm nay, nhưng biển sẽ ru bạn qua đêm này.",
-    "Bạn xứng đáng được yêu thương, kể cả ngày bạn thấy mình tệ nhất.",
-    "Thử làm một việc nhỏ thôi, như đứng dậy rót cốc nước."
-  ],
-  stress: [
-    "Áp lực cao quá phải không? Hãy dừng lại thở cùng biển 1 phút.",
-    "Bạn mệt rồi, để biển mang bớt áp lực đi xa nhé.",
-    "Ưu tiên 1 việc quan trọng nhất hôm nay thôi, được không?"
-  ],
-  self_care: [
-    "Chăm sóc bản thân hôm nay nhé, bạn xứng đáng mà.",
-    "Uống một ngụm nước, hít sâu, bạn đang làm rất tốt.",
-    "Nghe tiếng sóng này… để biển ôm bạn một chút."
-  ]
-};
-
-const keywords = {
-  anxiety: ['lo lắng', 'sợ', 'run', 'tim đập nhanh', 'khó thở'],
-  depression: ['buồn', 'chán', 'mệt mỏi', 'không muốn làm gì', 'cô đơn'],
-  stress: ['áp lực', 'stress', 'căng thẳng', 'quá tải', 'deadline'],
-  self_care: ['nghỉ ngơi', 'thư giãn', 'tự yêu', 'chăm sóc', 'bình tĩnh']
-};
+const smartReplies = { /* giữ nguyên như trước nếu bạn muốn, hoặc bỏ cũng được */ };
+const keywords = { /* giữ nguyên nếu cần */ };
 
 let isPaired = false;
+let isGroupMode = false;
 let isMuted = false;
 let recorder = null;
 let audioChunks = [];
 let botTimeout = null;
-
-function sendMessage() {
-  const msg = userInput.value.trim();
-  if (!msg) return;
-
-  addMessage('user', msg);
-  userInput.value = '';
-
-  if (isPaired) {
-    socket.emit('message', msg);
-  } else {
-    // Dùng intelligent chatbot trước → fallback về 50 câu ấm lòng
-    const reply = getSmartReply(msg) || replies[Math.floor(Math.random() * replies.length)];
-    setTimeout(() => addMessage('bot', reply), 1000 + Math.random() * 1200);
-  }
-}
-
-function getSmartReply(msg) {
-  const lower = msg.toLowerCase();
-  for (const cat in keywords) {
-    if (keywords[cat].some(k => lower.includes(k))) {
-      const arr = smartReplies[cat];
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
-  }
-  return null; 
-}
 
 function addMessage(sender, text = '', audioUrl = null) {
   const div = document.createElement('div');
   div.className = sender;
 
   if (audioUrl) {
-    div.innerHTML = `<span class="play-icon" onclick="playAudio(this)" data-url="${audioUrl}"></span> Voice Message (${Math.round(audioUrl.length/1000)}s)`;
+    div.innerHTML = `<span class="play-icon" onclick="playAudio(this)" data-url="${audioUrl}"></span> Voice Message`;
     div.classList.add('voice-message');
   } else {
-    div.textContent = text || '[Voice message]';
+    div.textContent = text;
   }
 
   div.style.margin = '10px 0';
@@ -132,7 +80,6 @@ function startRecording() {
     micBtn.classList.add('recording');
   });
 }
-
 function stopRecording() {
   if (!recorder) return;
   recorder.stop();
@@ -141,9 +88,27 @@ function stopRecording() {
     const blob = new Blob(audioChunks, { type: 'audio/webm' });
     const url = URL.createObjectURL(blob);
     addMessage('user', '', url);
-    if (isPaired) socket.emit('voice', blob);
+    if (isPaired || isGroupMode) socket.emit('voice', blob);
     micBtn.classList.remove('recording');
   });
+}
+
+function toggleMode() {
+  isGroupMode = !isGroupMode;
+
+  if (isGroupMode) {
+    socket.emit('join-group');
+    status.textContent = "Đã vào Group Chat – Biển đang lắng nghe tất cả mọi người";
+    chatContainer.style.display = 'block';
+    modeSwitch.textContent = "Chuyển sang 1:1 Chat";
+    addMessage('bot', 'Chào cả nhà! Biển đang ở đây cùng mọi người nè');
+  } else {
+    socket.emit('join-1to1');
+    status.textContent = "Đang tìm một người bạn đồng hành cùng biển...";
+    modeSwitch.textContent = "Chuyển sang Group Chat";
+    isPaired = false;
+    startBotFallback(); // quay lại cơ chế chờ 6s
+  }
 }
 
 socket.emit('join-1to1');
@@ -151,7 +116,7 @@ socket.emit('join-1to1');
 socket.on('paired', () => {
   clearTimeout(botTimeout);
   isPaired = true;
-  status.textContent = "Đã tìm thấy một người bạn đồng hành cùng biển ♡";
+  status.textContent = "Đã tìm thấy một người bạn đồng hành cùng biển";
   chatContainer.style.display = 'block';
   addMessage('bot', 'Gió đã mang một người lạ đến với bạn… bạn muốn nói gì cũng được nha.');
 });
@@ -164,25 +129,42 @@ socket.on('voice', blob => {
 socket.on('partner-left', () => {
   isPaired = false;
   addMessage('bot', 'Người đó vừa rời đi… nhưng biển vẫn ở đây với bạn nè.');
-  startBotFallback();
+  if (!isGroupMode) startBotFallback();
 });
 
 function startBotFallback() {
+  clearTimeout(botTimeout);
   botTimeout = setTimeout(() => {
-    if (!isPaired) {
-      status.textContent = "Biển đang lắng nghe bạn ♡";
+    if (!isPaired && !isGroupMode) {
+      status.textContent = "Biển đang lắng nghe bạn";
       chatContainer.style.display = 'block';
-      addMessage('bot', 'Biển đây… bạn muốn nói gì cũng được, mình đang lắng nghe ♡');
+      addMessage('bot', 'Biển đây… bạn muốn nói gì cũng được, mình đang lắng nghe');
     }
   }, 6000);
 }
 startBotFallback();
 
+function sendMessage() {
+  const msg = userInput.value.trim();
+  if (!msg) return;
+  addMessage('user', msg);
+  userInput.value = '';
+
+  if (isPaired || isGroupMode) {
+    socket.emit('message', msg);
+  } else {
+    setTimeout(() => {
+      const reply = replies[Math.floor(Math.random() * replies.length)];
+      addMessage('bot', reply);
+    }, 1000 + Math.random() * 1200);
+  }
+}
+
 function finishCheckin() {
   thankyouAudio.play();
-  document.getElementById("checkin-section")?.style = "display:none";
-  document.getElementById("chat-container").style.display = "block";
-  addMessage("bot", "Biển đây… bạn muốn nói gì cũng được, mình đang lắng nghe ♡");
+  document.getElementById("checkin-section")?.style.display = "none";
+  chatContainer.style.display = "block";
+  addMessage("bot", "Biển đây… bạn muốn nói gì cũng được, mình đang lắng nghe");
 }
 
 function toggleMute() {
@@ -192,4 +174,8 @@ function toggleMute() {
   muteBtn.textContent = isMuted ? 'Unmute' : 'Mute';
 }
 
-userInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+userInput.addEventListener'keypress', e => { if (e.key === 'Enter') sendMessage(); });
+micBtn.addEventListener('mousedown', startRecording);
+micBtn.addEventListener('mouseup', stopRecording);
+micBtn.addEventListener('touchstart', e => { e.preventDefault(); startRecording(); });
+micBtn.addEventListener('touchend', e => { e.preventDefault(); stopRecording(); });
