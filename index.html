@@ -1,35 +1,37 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nerissa – Gửi tâm tư vào biển sâu</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h1>Nerissa</h1>
-    <p id="welcome">Biển giữ hộ tâm tư, gió mang đến lời yêu.</p>
+    <p class="slogan">Biển giữ hộ tâm tư, gió mang đến lời yêu.</p>
+    <div id="status">Đang tìm một người bạn đồng hành cùng biển...</div>
 
-    <!-- Phần Tiếng Sóng (check-in) -->
-    <div id="checkin-section">
-      <button onclick="finishCheckin()"> Tiếng Sóng</button>
-    </div>
+    <button id="mode-switch" onclick="toggleMode()">Chuyển sang Group Chat</button>
 
-    <!-- Chat box -->
-    <div id="chat-container">
+    <div id="chat-container" style="display:none">
       <div id="chat-box"></div>
       <div class="input-area">
-        <input type="text" id="user-input" placeholder="Nói gì với biển cũng được..." />
-        <button onclick="sendMessage()">Gửi</button>
+        <input type="text" id="user-input" placeholder="Nói gì với biển cũng được..." autocomplete="off">
+        <button id="send-btn" onclick="sendMessage()">Gửi</button>
+        <button id="mic-btn" onmousedown="startRecording()" onmouseup="stopRecording()" class="mic">Mic</button>
+        <button id="mute-btn" onclick="toggleMute()">Mute</button>
       </div>
     </div>
   </div>
 
   <!-- Âm thanh -->
-  <audio id="thankyou-audio" src="https://bit.ly/nerissa-thankyou"></audio>
-  <audio id="wave-bg" src="https://bit.ly/nerissa-wave" loop></audio>
+  <audio id="welcome-voice" src="https://files.catbox.moe/9y0r0j.mp3"></audio>     <!-- “Nerissa ở đây lắng nghe bạn nhé” -->
+  <audio id="thankyou-voice" src="https://files.catbox.moe/9l2p3k.mp3"></audio>   <!-- “Cảm ơn bạn vì đã cho phép Nerissa…” -->
+  <audio id="wave-bg" src="https://files.catbox.moe/4m5z8w.mp3" loop></audio>     <!-- sóng biển nền -->
 
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
+
